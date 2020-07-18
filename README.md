@@ -57,12 +57,12 @@ const data = {
 
 function MyComponent() {
   return (
-    &ltChart
+    <Chart
       scale={7}
       colors={['#A6E7DB', '#2D7A7A', '#76C7D2']}
       data={data}
       displayValue={(value: number) => '$ ' + value}
-      /&gt
+      />
   )
 }
 ```
