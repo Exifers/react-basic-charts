@@ -1,0 +1,55 @@
+.chart {
+  display: flex;
+  align-items: flex-end;
+  font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+.chart__bar-group {
+  margin: 0 30px 0 30px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.chart__entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart__entry .key {
+  color: #C7CBD1;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 10px;
+  height: 19px;
+}
+
+.chart__bar {
+  width: 27px;
+  cursor: pointer;
+}
+
+.chart__bar:focus {
+  outline: 0;
+  opacity: 0.9;
+}
+
+.chart__bar:hover {
+  opacity: 0.9;
+}
+
+.chart__scale-bar {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.chart__scale-bar__value {
+  font-weight: bold;
+  color: #9DA4AE;
+  font-size: 14px;
+  margin-top: 35px;
+}
+
+.chart__scale-bar__value:first-child {
+  margin-bottom: 29px;
+}
