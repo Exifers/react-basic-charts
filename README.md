@@ -3,6 +3,8 @@ A very basic charts library for React. For now it has only a basic bar chart.
 
 ![](https://raw.githubusercontent.com/Exifers/react-basic-charts/master/doc/bars.png)
 
+[live demo](https://react-basic-charts.netlify.app/)
+
 ## Usage
 ```bash
 // npm
