@@ -29,11 +29,6 @@
   cursor: pointer;
 }
 
-.chart__bar:focus {
-  outline: 0;
-  opacity: 0.9;
-}
-
 .chart__bar:hover {
   opacity: 0.9;
 }
@@ -47,9 +42,21 @@
   font-weight: bold;
   color: #9DA4AE;
   font-size: 14px;
-  margin-top: 35px;
+  height: 17px;
+  margin-top: 40px;
 }
 
 .chart__scale-bar__value:first-child {
   margin-bottom: 29px;
+}
+
+.chart__bar__tooltip {
+  z-index: 2;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.chart__bar__tooltip--visible {
+  opacity: 1;
 }

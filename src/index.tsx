@@ -1,61 +1,93 @@
 import React, {useState} from 'react';
 import { usePopper } from 'react-popper';
+import {useHover} from './useHover';
 
 interface chartProps {
-  data: {string: [number, number, number]},
+  displayValue: (value: number) => string,
+  data: {[key: string]: [number, number, number]},
   colors: [string],
   scale: number
 };
 
-const computeScaleBarValues = () => {
-  return [0,100,200,300]
+interface charBarProps {
+  displayValue: (value: number) => string,
+  value: number,
+  color: string,
+  scale: number
+};
+
+const ChartBar = (props: charBarProps) => {
+  // @ts-ignore
+  const [referenceElement, setReferenceElement] = useState(null);
+  // @ts-ignore
+  const [popperElement, setPopperElement] = useState(null);
+  // @ts-ignore
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    placement: 'top'
+  });
+
+  const [hoverRef, isHovered] = useHover();
+
+  const { value, scale, color, displayValue } = props;
+
+  return (
+    <>
+      {/* @ts-ignore */}
+      <div ref={node => {setReferenceElement(node); hoverRef(node)}}
+        className='chart__bar'
+        style={{
+          height:value * scale + 'px',
+          backgroundColor: color
+        }}
+      />
+      {/* @ts-ignore */}
+      <span ref={setPopperElement}
+        className={`chart__bar__tooltip ${isHovered && 'chart__bar__tooltip--visible'}`}
+        style={{...styles.popper, color}} {...attributes.popper}>
+        {displayValue(value)}
+      </span>
+    </>
+  );
 }
 
 export const Chart = (props: chartProps) => {
 
-  const [referenceElement, setReferenceElement] = useState(null);
-  const [popperElement, setPopperElement] = useState(null);
-  const [arrowElement, setArrowElement] = useState(null);
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    modifiers: [{name: 'arrow', options: {element: arrowElement}}]
-  })
+  const { data, colors, scale, displayValue } = props;
 
-  const { data, colors, scale } = props;
-
+  const computeScaleBarValues = () => {
+    const max = Math.max(...Object.values(data).map(value => Math.max(...value)));
+    const maxInPx = max * scale;
+    let ret = [];
+    let cur = 0;
+    const deltaInPx = 57; // from css
+    while (cur * scale < maxInPx) {
+      ret.push(cur);
+      cur += Math.round(deltaInPx / scale);
+    }
+    return ret;
+  }
 
   return (
     <div className='chart'>
       <div className='chart__scale-bar'>
-        {computeScaleBarValues().map(value => (
-          <span className='chart__scale-bar__value'>{value}</span>
+        {computeScaleBarValues().map((value, index) => (
+          <span key={index} className='chart__scale-bar__value'>{value}</span>
         ))}
       </div>
       {Object.entries(data).map(([key, values]) => (
-        <div className='chart__entry'>
+        <div key={key}className='chart__entry'>
           <div
             key={key}
             className='chart__bar-group'
             style={{height:(Math.max(...values) * scale) + ' px'}}
           >
             {values.map((value, index) => (
-              <>
-                {/* @ts-ignore */}
-                <div ref={setReferenceElement}
-                  key={key}
-                  className='chart__bar'
-                  tabIndex={0}
-                  style={{
-                    height:value * scale + 'px',
-                    backgroundColor: colors[index]
-                  }}
-                />
-                {/* @ts-ignore */}
-                <div ref={setPopperElement} style={style.popper} {...attributes.popper}>
-                  Popper
-                  {/* @ts-ignore */}
-                  <div ref={setArrowElement} style={styles.arrow}/>
-                </div>
-              </>))}
+              <ChartBar key={index}
+                value={value}
+                color={colors[index]}
+                scale={scale}
+                displayValue={displayValue}/>
+            ))}
           </div>
           <span className='key'>{key}</span>
         </div>
@@ -65,6 +97,7 @@ export const Chart = (props: chartProps) => {
 };
 
 Chart.defaultProps = {
+  displayValue: (value: number) => `$ ${value}`,
   scale: 7,
   colors: ['#A6E7DB', '#2D7A7A', '#76C7D2'],
   data: {
@@ -76,7 +109,7 @@ Chart.defaultProps = {
     Tuesday: [
       15,
       25,
-      10
+      0
     ],
     Wednesday: [
       20,
