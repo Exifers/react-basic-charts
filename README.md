@@ -60,7 +60,7 @@ const data = {
 function MyComponent() {
   return (
     <Chart
-      scale={7}
+      height={500}
       colors={['#A6E7DB', '#2D7A7A', '#76C7D2']}
       data={data}
       displayValue={(value: number) => '$ ' + value}

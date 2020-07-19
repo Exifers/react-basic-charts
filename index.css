@@ -34,20 +34,15 @@
 }
 
 .chart__scale-bar {
-  display: flex;
-  flex-direction: column-reverse;
+  position: relative;
 }
 
 .chart__scale-bar__value {
+  position: absolute;
   font-weight: bold;
   color: #9DA4AE;
   font-size: 14px;
   height: 17px;
-  margin-top: 40px;
-}
-
-.chart__scale-bar__value:first-child {
-  margin-bottom: 29px;
 }
 
 .chart__bar__tooltip {

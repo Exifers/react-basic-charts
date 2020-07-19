@@ -6,7 +6,8 @@ interface chartProps {
   displayValue: (value: number) => string,
   data: {[key: string]: [number, number, number]},
   colors: [string],
-  scale: number
+  scale: number,
+  height: number
 };
 
 interface charBarProps {
@@ -16,53 +17,90 @@ interface charBarProps {
   scale: number
 };
 
-const ChartBar = (props: charBarProps) => {
-  // @ts-ignore
-  const [referenceElement, setReferenceElement] = useState(null);
-  // @ts-ignore
-  const [popperElement, setPopperElement] = useState(null);
-  // @ts-ignore
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    placement: 'top'
-  });
 
-  const [hoverRef, isHovered] = useHover();
+const SCALE_BAR_TARGET_MARKERS_NUM = 5;
+const KEY_HEIGHT = 17; // from css
+const LABEL_HEIGHT = 29; // from css
 
-  const { value, scale, color, displayValue } = props;
+/* Possible values of steps for the scalebar. We always take the one that gives the closest
+ * amount of markers to SCALE_BAR_TARGET_MARKERS_NUM. If that's not bug enough we take a
+ * power of ten, e.g 100, 1000, 10000, etc.
+ */
+  const nonPowerOfTenScaleBarSteps: number[] = [
+    1,
+    2,
+    5,
+    10,
+    20,
+    100
+  ];
 
-  return (
-    <>
-      {/* @ts-ignore */}
-      <div ref={node => {setReferenceElement(node); hoverRef(node)}}
-        className='chart__bar'
-        style={{
-          height:value * scale + 'px',
-          backgroundColor: color
-        }}
-      />
-      {/* @ts-ignore */}
-      <span ref={setPopperElement}
-        className={`chart__bar__tooltip ${isHovered && 'chart__bar__tooltip--visible'}`}
-        style={{...styles.popper, color}} {...attributes.popper}>
-        {displayValue(value)}
-      </span>
-    </>
-  );
-}
+  /**
+   * Returns the element of list that is the closest of the value.
+   */
+  const closest = (value: number, list: number[]) => {
+    const deltas = list.map(v => value - v);
+    return value - Math.min(...deltas);
+  }
 
-export const Chart = (props: chartProps) => {
+  const nearestPowerOfTen = (value: number) => {
+    return Math.pow(10,Math.round(Math.log10(value)));
+  }
 
-  const { data, colors, scale, displayValue } = props;
+  const ChartBar = (props: charBarProps) => {
+    const [referenceElement, setReferenceElement] = useState(null);
+    const [popperElement, setPopperElement] = useState(null);
+    const { styles, attributes } = usePopper(referenceElement, popperElement, {
+      placement: 'top'
+    });
 
-  const computeScaleBarValues = () => {
+    const [hoverRef, isHovered] = useHover();
+
+    const { value, scale, color, displayValue } = props;
+
+    return (
+      <>
+        {/* @ts-ignore */}
+        <div ref={node => {setReferenceElement(node); hoverRef(node)}}
+          className='chart__bar'
+          style={{
+            height:value * scale + 'px',
+            backgroundColor: color
+          }}
+        />
+        {/* @ts-ignore */}
+        <span ref={setPopperElement}
+          className={`chart__bar__tooltip ${isHovered && 'chart__bar__tooltip--visible'}`}
+          style={{...styles.popper, color}} {...attributes.popper}>
+          {displayValue(value)}
+        </span>
+      </>
+    );
+  }
+
+  export const Chart = (props: chartProps) => {
+
+    const { data, colors, displayValue, height } = props;
+
     const max = Math.max(...Object.values(data).map(value => Math.max(...value)));
-    const maxInPx = max * scale;
+    const scale = height / max;
+
+    const computeScaleBarValues = () => {
+      const preciseStep = max / (SCALE_BAR_TARGET_MARKERS_NUM - 1);
+      let closestStep = closest(preciseStep, nonPowerOfTenScaleBarSteps);
+    if (closestStep === Math.max(...nonPowerOfTenScaleBarSteps)) {
+      // maybe it needs a step even bigger, we take a power of ten
+      closestStep = nearestPowerOfTen(preciseStep);
+    }
     let ret = [];
     let cur = 0;
-    const deltaInPx = 57; // from css
-    while (cur * scale < maxInPx) {
+    while (cur < max) {
       ret.push(cur);
-      cur += Math.round(deltaInPx / scale);
+      cur += closestStep;
+    }
+    const last = ret[ret.length - 1];
+    if ((max - last) * scale > KEY_HEIGHT) {
+      ret.push(max); // always show the maximum value if there's room for it
     }
     return ret;
   }
@@ -71,7 +109,10 @@ export const Chart = (props: chartProps) => {
     <div className='chart'>
       <div className='chart__scale-bar'>
         {computeScaleBarValues().map((value, index) => (
-          <span key={index} className='chart__scale-bar__value'>{value}</span>
+          <span
+            key={index} className='chart__scale-bar__value'
+            style={{bottom:value * scale + LABEL_HEIGHT - KEY_HEIGHT / 2}}>{value}
+          </span>
         ))}
       </div>
       {Object.entries(data).map(([key, values]) => (
@@ -97,8 +138,8 @@ export const Chart = (props: chartProps) => {
 };
 
 Chart.defaultProps = {
+  height: 500,
   displayValue: (value: number) => `$ ${value}`,
-  scale: 7,
   colors: ['#A6E7DB', '#2D7A7A', '#76C7D2'],
   data: {
     Monday: [
@@ -114,7 +155,7 @@ Chart.defaultProps = {
     Wednesday: [
       20,
       25,
-      30
+      80
     ],
     Thirsday: [
       30,
@@ -132,8 +173,8 @@ Chart.defaultProps = {
       30
     ],
     Sunday: [
-      20,
       10,
+      5,
       5
     ]
   }

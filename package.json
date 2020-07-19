@@ -1,6 +1,7 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
+  "homepage": "https://github.com/Exifers/react-basic-charts",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
@@ -38,6 +39,7 @@
   "devDependencies": {
     "@types/react": "^16.9.43",
     "@types/react-dom": "^16.9.8",
+    "cssnano": "^4.1.10",
     "husky": "^4.2.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -48,5 +50,6 @@
   "dependencies": {
     "@popperjs/core": "^2.4.4",
     "react-popper": "^2.2.3"
-  }
+  },
+  "keywords": ["react", "chart", "graphic", "bars", "basic"]
 }
